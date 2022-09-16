@@ -3,6 +3,19 @@ var courses = {};
 var stat;
 var stdID = null;
 var logIDList = [];
+var soundList = [];
+
+const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+const SpeechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
+// const SpeechRecognitionEvent =
+//   window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
+
+const speech = new SpeechRecognition();
+
+recognition.continuous = false;
+recognition.lang = "en-US";
+recognition.interimResults = true;
+
 function createUUID() {
   return "xxxxxxx".replace(/[xy]/g, function (c) {
     var r = (Math.random() * 16) | 0,
@@ -40,6 +53,7 @@ function toggleFormBody(data) {
 function removeList() {
   $("#logsList").innerHTML = "";
   logIDList = [];
+  soundList = [];
 }
 
 async function checkID(data) {
@@ -67,6 +81,9 @@ async function getNotes(id) {
       }
     }
     if (!skip) {
+      var logSpeech = new SpeechSynthesisUtterance();
+      logSpeech.text = `${data[datum].date} ${data[datum].text}`;
+      soundList.push(logSpeech);
       $(
         "#logsList"
       ).innerHTML += `<li onclick="toggleNote( '#${data[datum].id}')" class ="my-2 rounded bg-purple-100">
@@ -81,6 +98,10 @@ async function getNotes(id) {
   }
   $("#submitButton").removeAttribute("disabled");
 }
+function readNotes() {
+  soundList.forEach((log) => window.speechSynthesis.speak(log));
+}
+
 function toggleNote(data) {
   disp = $(data).style.display;
   if (disp == "block") {
@@ -89,6 +110,17 @@ function toggleNote(data) {
     show($(data));
   }
 }
+
+async function listen() {
+  speech.start();
+  console.log("speech started");
+
+  speech.onresult = (event) => {
+    $("#logInput").value = event.results[0][0].transcript;
+    console.log(event);
+  };
+}
+
 async function sendIt() {
   let rn = new Date();
   let idToUse = createUUID();
