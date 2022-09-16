@@ -1,4 +1,3 @@
-
 var courseSel = "";
 var courses = {};
 var stat;
@@ -112,4 +111,6 @@ async function sendIt() {
   } catch (err) {
     console.log(err);
   }
+  let sendSound = new Audio("SendIt.mp3");
+  sendSound.play();
 }
